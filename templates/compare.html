@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Dataset Leaf Comparison Studio | AgriVision AI{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-6xl mx-auto">
+    
+    <!-- Header -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="inline-flex items-center space-x-2 px-3 py-1 bg-brand-50 border border-brand-200 rounded-full text-brand-700 text-xs font-semibold mb-2">
+                <i class="fa-solid fa-code-compare"></i>
+                <span>Interactive PlantVillage Benchmark Studio</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Leaf Comparison Studio</h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                Directly compare an image against stored ground-truth dataset leaves for any of the 38 PlantVillage classes.
+            </p>
+        </div>
+
+        <!-- Class Selector Dropdown -->
+        <form method="GET" action="{{ url_for('compare') }}" class="flex items-center space-x-2">
+            <select name="class_name" onchange="this.form.submit()" 
+                    class="bg-slate-50 border border-slate-200 text-slate-800 text-xs font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                {% for cls in classes %}
+                <option value="{{ cls }}" {% if cls == selected_class %}selected{% endif %}>
+                    {{ cls.replace('___', ' - ').replace('_', ' ') }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <!-- Active Class Overview Banner -->
+    <div class="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+            <span class="text-xs font-mono font-bold text-brand-400 uppercase tracking-wider block mb-1">Active Reference Class</span>
+            <h2 class="text-2xl font-black tracking-tight text-white flex items-center">
+                {{ profile.crop }} <span class="text-brand-400 font-light mx-2">&mdash;</span> {{ profile.condition }}
+            </h2>
+            <p class="text-xs text-slate-400 italic mt-0.5 font-mono">Scientific Name: {{ profile.scientific_name }}</p>
+            <p class="text-xs text-slate-300 mt-3 max-w-2xl leading-relaxed">{{ profile.overview }}</p>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <div class="px-4 py-2 rounded-xl text-xs font-bold border 
+                {% if profile.status == 'Healthy' %} bg-emerald-900/50 border-emerald-500 text-emerald-300
+                {% else %} bg-rose-900/50 border-rose-500 text-rose-300 {% endif %}">
+                {{ profile.status }} &bull; {{ profile.severity }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Visual Comparison Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        
+        <!-- Left: Upload Specimen to Compare -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 border border-slate-100 space-y-5">
+            <h3 class="text-base font-extrabold text-slate-900 tracking-tight flex items-center">
+                <i class="fa-solid fa-cloud-arrow-up text-brand-600 mr-2"></i> Upload Specimen for Comparison
+            </h3>
+
+            <form method="POST" action="{{ url_for('compare', class_name=selected_class) }}" enctype="multipart/form-data" class="space-y-4">
+                <div class="border-2 border-dashed border-slate-300 hover:border-brand-500 rounded-2xl p-6 text-center bg-slate-50 cursor-pointer">
+                    <input type="file" name="custom_leaf" required accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100">
+                    <p class="text-[11px] text-slate-400 mt-2">Select a leaf photo to run visual similarity against {{ profile.condition }}</p>
+                </div>
+                <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs shadow-md transition">
+                    Run Visual Comparison & Calculate Match %
+                </button>
+            </form>
+
+            {% if uploaded_image_url %}
+            <div class="mt-6 pt-6 border-t border-slate-100 text-center">
+                <span class="text-xs font-bold text-slate-700 block mb-2">Uploaded Test Specimen:</span>
+                <img src="{{ uploaded_image_url }}" alt="Uploaded leaf" class="max-h-60 mx-auto rounded-xl object-contain border border-slate-200 shadow-sm">
+                
+                {% if similarity_data %}
+                <div class="mt-4 p-4 bg-brand-50 border border-brand-200 rounded-xl text-xs text-brand-900 text-left">
+                    <div class="flex items-center justify-between font-bold mb-2">
+                        <span>Similarity to {{ profile.condition }}:</span>
+                        <span class="text-sm font-mono text-brand-700">{{ similarity_data.score }}%</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
+                        <div>Color Tone Match: <strong>{{ similarity_data.metrics.color_match }}%</strong></div>
+                        <div>Texture Pattern: <strong>{{ similarity_data.metrics.texture_match }}%</strong></div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right: Stored Dataset Reference Image -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 border border-slate-100 space-y-5">
+            <h3 class="text-base font-extrabold text-slate-900 tracking-tight flex items-center">
+                <i class="fa-solid fa-database text-brand-600 mr-2"></i> Stored PlantVillage Benchmark
+            </h3>
+
+            <div class="space-y-4 text-center">
+                <div class="h-64 bg-slate-100 rounded-2xl flex items-center justify-center overflow-hidden border border-slate-200">
+                    {% if ref_sample %}
+                    <img src="{{ url_for('static', filename=ref_sample) }}" alt="Dataset sample" class="w-full h-full object-cover">
+                    {% else %}
+                    <span class="text-xs text-slate-400">No reference image archived</span>
+                    {% endif %}
+                </div>
+                <div class="text-left text-xs text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
+                    <div><strong class="text-slate-800">Ground-Truth Class:</strong> <span class="font-mono text-brand-700">{{ selected_class }}</span></div>
+                    <div><strong class="text-slate-800">Standard NPK Fertilizer:</strong> {{ profile.fertilizers.primary_npk }}</div>
+                    <div><strong class="text-slate-800">Mandatory Precautions:</strong> {{ profile.precautions[0] }}</div>
+                </div>
+            </div>
+
+            {% if healthy_sample %}
+            <div class="mt-6 pt-6 border-t border-slate-100">
+                <span class="text-xs font-bold text-slate-700 block mb-2">Healthy Baseline Comparison:</span>
+                <div class="h-40 bg-slate-100 rounded-xl overflow-hidden border border-emerald-200">
+                    <img src="{{ url_for('static', filename=healthy_sample) }}" alt="Healthy baseline" class="w-full h-full object-cover">
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

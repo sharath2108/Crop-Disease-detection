@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Crop Health Analytics & Insights | AgriVision AI{% endblock %}
+
+{% block extra_head %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-6xl mx-auto">
+
+    <!-- Header -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="inline-flex items-center space-x-2 px-3 py-1 bg-brand-50 border border-brand-200 rounded-full text-brand-700 text-xs font-semibold mb-2">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Agronomic Telemetry & Trends</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Farm Health & Disease Analytics</h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                Visual analysis of crop infection rates, pathogen distribution, and healthy foliage ratios.
+            </p>
+        </div>
+
+        <a href="{{ url_for('dashboard') }}" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center space-x-2">
+            <i class="fa-solid fa-camera"></i>
+            <span>Scan Specimen</span>
+        </a>
+    </div>
+
+    <!-- Summary Metrics -->
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-6">
+        <div class="bg-white rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 text-center">
+            <span class="text-3xl font-black text-slate-900 block font-mono">{{ user_stats.total_scans }}</span>
+            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-1 block">Your Total Scans</span>
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 text-center">
+            <span class="text-3xl font-black text-emerald-600 block font-mono">{{ user_stats.healthy_percentage }}%</span>
+            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-1 block">Healthy Ratio</span>
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 text-center">
+            <span class="text-3xl font-black text-rose-600 block font-mono">{{ user_stats.infected_count }}</span>
+            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-1 block">Infections Caught</span>
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 text-center">
+            <span class="text-3xl font-black text-brand-600 block font-mono">38</span>
+            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-1 block">Trained Classes</span>
+        </div>
+    </div>
+
+    <!-- Visual Charts Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <!-- Doughnut: Healthy vs Infected -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col justify-between">
+            <div>
+                <h3 class="text-base font-extrabold text-slate-900 tracking-tight mb-1 flex items-center">
+                    <i class="fa-solid fa-chart-pie text-brand-600 mr-2"></i> Crop Health Distribution
+                </h3>
+                <p class="text-xs text-slate-500 mb-6">Proportion of healthy foliage versus pathogen-affected scans.</p>
+            </div>
+            
+            <div class="relative h-64 flex items-center justify-center">
+                <canvas id="healthPieChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Bar Chart: Most Prevalent Diseases -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col justify-between">
+            <div>
+                <h3 class="text-base font-extrabold text-slate-900 tracking-tight mb-1 flex items-center">
+                    <i class="fa-solid fa-chart-column text-brand-600 mr-2"></i> Frequent Diseases Intercepted
+                </h3>
+                <p class="text-xs text-slate-500 mb-6">Top pathogens detected in your scanned specimens.</p>
+            </div>
+            
+            <div class="relative h-64 flex items-center justify-center">
+                <canvas id="diseasesBarChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Kaggle PlantVillage Benchmark Reference Card -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
+        <h3 class="text-base font-extrabold text-slate-900 tracking-tight mb-4 flex items-center">
+            <i class="fa-solid fa-database text-brand-600 mr-2"></i> PlantVillage Benchmark Architecture & Precision
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-slate-700">
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <strong class="text-slate-900 block font-bold mb-1">Architecture:</strong>
+                <span>MobileNetV2 Depthwise Separable Convolutions optimized for high throughput & accuracy.</span>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <strong class="text-slate-900 block font-bold mb-1">Dataset:</strong>
+                <span>PlantVillage (Kaggle), 54,303 high-resolution images across 14 crops & 38 distinct classes.</span>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <strong class="text-slate-900 block font-bold mb-1">Dataset Comparison:</strong>
+                <span>Direct perceptual & HSV color histogram correlation against stored ground-truth specimens.</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Health Distribution Doughnut
+    const healthyCount = {{ user_stats.healthy_count }};
+    const infectedCount = {{ user_stats.infected_count }};
+    const total = {{ user_stats.total_scans }};
+
+    const ctxPie = document.getElementById('healthPieChart').getContext('2d');
+    new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+            labels: ['Healthy Leaves', 'Diseased Leaves'],
+            datasets: [{
+                data: total > 0 ? [healthyCount, infectedCount] : [1, 0],
+                backgroundColor: ['#22c55e', '#ef4444'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // 2. Top Diseases Bar Chart
+    {% if user_stats.top_diseases %}
+    const diseaseLabels = {{ user_stats.top_diseases | map(attribute='predicted_class') | list | tojson }}.map(l => l.replace('___', ' - ').replace('_', ' '));
+    const diseaseCounts = {{ user_stats.top_diseases | map(attribute='count') | list | tojson }};
+    {% else %}
+    const diseaseLabels = ['Tomato Early Blight', 'Potato Late Blight', 'Apple Scab', 'Corn Common Rust'];
+    const diseaseCounts = [0, 0, 0, 0];
+    {% endif %}
+
+    const ctxBar = document.getElementById('diseasesBarChart').getContext('2d');
+    new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+            labels: diseaseLabels,
+            datasets: [{
+                label: 'Scans Detected',
+                data: diseaseCounts,
+                backgroundColor: '#16a34a',
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

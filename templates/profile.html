@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}User ID & Profile | AgriVision AI{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-4xl mx-auto py-4">
+
+    <!-- Digital Farmer Identification Card -->
+    <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-brand-950 rounded-3xl p-8 text-white shadow-2xl border border-slate-700 relative overflow-hidden">
+        <!-- Background Leaf Hologram -->
+        <div class="absolute -right-8 -bottom-8 w-60 h-60 bg-brand-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-white/10">
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-emerald-400 text-white flex items-center justify-center text-2xl font-black shadow-lg">
+                    {{ user.full_name[0] | upper }}
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold tracking-tight text-white">{{ user.full_name }}</h1>
+                    <span class="text-xs text-brand-400 font-mono font-semibold">@{{ user.username }} &bull; {{ user.email }}</span>
+                </div>
+            </div>
+
+            <!-- Digital User ID Badge -->
+            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Official Farmer ID</span>
+                <span class="text-base font-mono font-black text-brand-300 tracking-wider block mt-0.5">
+                    {{ user.user_id }}
+                </span>
+                <span class="text-[9px] text-emerald-400 font-bold uppercase mt-1 block">&check; Authenticated Agronomist</span>
+            </div>
+        </div>
+
+        <!-- Metadata Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 text-xs text-slate-300">
+            <div>
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Farm Location</span>
+                <span class="font-bold text-white mt-0.5 block">{{ user.farm_location }}</span>
+            </div>
+            <div>
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Primary Crops</span>
+                <span class="font-bold text-white mt-0.5 block">{{ user.crop_interests }}</span>
+            </div>
+            <div>
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Member Since</span>
+                <span class="font-mono text-white mt-0.5 block">{{ user.created_at[:10] }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics & Activity Overview -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="bg-white rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 text-center">
+            <span class="text-3xl font-black text-slate-900 block font-mono">{{ stats.total_scans }}</span>
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1 block">Total Scans Run</span>
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 text-center">
+            <span class="text-3xl font-black text-emerald-600 block font-mono">{{ stats.healthy_count }}</span>
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1 block">Healthy Foliage Scans</span>
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 text-center">
+            <span class="text-3xl font-black text-rose-600 block font-mono">{{ stats.infected_count }}</span>
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1 block">Diseases Intercepted</span>
+        </div>
+    </div>
+
+    <!-- Recent Scans Table inside Profile -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+            <h2 class="text-base font-extrabold text-slate-900 tracking-tight">Recent Diagnostic Activity</h2>
+            <a href="{{ url_for('history') }}" class="text-xs font-bold text-brand-600 hover:underline">
+                Full Logbook &rarr;
+            </a>
+        </div>
+
+        {% if recent_diagnoses %}
+        <div class="space-y-3">
+            {% for d in recent_diagnoses %}
+            <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-slate-100/70 transition">
+                <div class="flex items-center space-x-3">
+                    <img src="{{ url_for('static', filename='uploads/' + d.image_filename) }}" alt="leaf" class="w-10 h-10 object-cover rounded-xl border border-slate-200">
+                    <div>
+                        <span class="text-xs font-bold text-slate-900 block">{{ d.crop_name }} &mdash; {{ d.condition_name }}</span>
+                        <span class="text-[10px] text-slate-400 font-mono">{{ d.created_at[:16] }}</span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-xs font-mono font-bold text-brand-700">{{ d.confidence }}% conf</span>
+                    <a href="{{ url_for('view_diagnosis', diag_id=d.id) }}" class="text-xs font-bold text-brand-600 hover:underline">
+                        View
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-xs text-slate-400 text-center py-6">No diagnostic scans performed yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

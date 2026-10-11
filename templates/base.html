@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AgriVision - Intelligent Crop Disease Detection & Precision Agronomy{% endblock %}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        amber: {
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-slate-50 text-slate-800 font-['Plus_Jakarta_Sans'] min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <nav class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 transition-all duration-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Brand Logo & Identity -->
+                <div class="flex items-center space-x-3">
+                    <a href="{{ url_for('dashboard') if logged_in else url_for('login') }}" class="flex items-center space-x-3 group">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-700 via-brand-600 to-emerald-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20 group-hover:scale-105 transition-transform duration-200">
+                            <i class="fa-solid fa-leaf text-xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-xl font-extrabold text-slate-900 tracking-tight flex items-center">
+                                AgriVision<span class="text-brand-600 ml-0.5">AI</span>
+                            </span>
+                            <span class="text-[10px] text-slate-500 tracking-wider font-semibold block -mt-1 uppercase">PlantVillage & MobileNetV2</span>
+                        </div>
+                    </a>
+
+                    {% if logged_in %}
+                    <div class="hidden md:flex items-center space-x-1 pl-8">
+                        <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:text-brand-700 hover:bg-brand-50 transition">
+                            <i class="fa-solid fa-camera mr-1.5 text-brand-600"></i> New Diagnosis
+                        </a>
+                        <a href="{{ url_for('compare') }}" class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:text-brand-700 hover:bg-brand-50 transition">
+                            <i class="fa-solid fa-code-compare mr-1.5 text-brand-600"></i> Compare Tool
+                        </a>
+                        <a href="{{ url_for('library') }}" class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:text-brand-700 hover:bg-brand-50 transition">
+                            <i class="fa-solid fa-book-open mr-1.5 text-brand-600"></i> Dataset Explorer
+                        </a>
+                        <a href="{{ url_for('history') }}" class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:text-brand-700 hover:bg-brand-50 transition">
+                            <i class="fa-solid fa-clock-rotate-left mr-1.5 text-brand-600"></i> History
+                        </a>
+                        <a href="{{ url_for('analytics') }}" class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:text-brand-700 hover:bg-brand-50 transition">
+                            <i class="fa-solid fa-chart-pie mr-1.5 text-brand-600"></i> Analytics
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- User Session Pill & Actions -->
+                <div class="flex items-center space-x-3">
+                    {% if logged_in %}
+                    <div class="hidden sm:flex items-center bg-slate-100 rounded-full px-3 py-1.5 border border-slate-200">
+                        <div class="w-6 h-6 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-bold mr-2">
+                            {{ current_full_name[0] | upper }}
+                        </div>
+                        <div class="text-left mr-2">
+                            <span class="text-xs font-bold text-slate-800 block leading-tight">{{ current_full_name }}</span>
+                            <span class="text-[10px] font-mono text-brand-700 font-semibold">{{ current_user_id }}</span>
+                        </div>
+                    </div>
+
+                    <a href="{{ url_for('profile') }}" class="p-2 text-slate-600 hover:text-brand-700 hover:bg-slate-100 rounded-lg transition" title="User Profile">
+                        <i class="fa-regular fa-user text-lg"></i>
+                    </a>
+
+                    <a href="{{ url_for('logout') }}" class="px-3 py-1.5 text-xs font-bold text-red-600 hover:text-white hover:bg-red-600 border border-red-200 hover:border-red-600 rounded-lg transition flex items-center space-x-1">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        <span>Logout</span>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-brand-700 transition">
+                        Sign In
+                    </a>
+                    <a href="{{ url_for('register') }}" class="px-4 py-2 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-user-plus text-xs"></i>
+                        <span>Register Farmer ID</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu Bar -->
+        {% if logged_in %}
+        <div class="md:hidden border-t border-slate-100 px-4 py-2 flex justify-around bg-slate-50 text-xs font-semibold text-slate-600">
+            <a href="{{ url_for('dashboard') }}" class="py-1 px-2 hover:text-brand-700 flex flex-col items-center">
+                <i class="fa-solid fa-camera mb-1"></i> Scan
+            </a>
+            <a href="{{ url_for('compare') }}" class="py-1 px-2 hover:text-brand-700 flex flex-col items-center">
+                <i class="fa-solid fa-code-compare mb-1"></i> Compare
+            </a>
+            <a href="{{ url_for('library') }}" class="py-1 px-2 hover:text-brand-700 flex flex-col items-center">
+                <i class="fa-solid fa-book-open mb-1"></i> Library
+            </a>
+            <a href="{{ url_for('history') }}" class="py-1 px-2 hover:text-brand-700 flex flex-col items-center">
+                <i class="fa-solid fa-clock-rotate-left mb-1"></i> History
+            </a>
+            <a href="{{ url_for('profile') }}" class="py-1 px-2 hover:text-brand-700 flex flex-col items-center">
+                <i class="fa-solid fa-id-card mb-1"></i> Profile
+            </a>
+        </div>
+        {% endif %}
+    </nav>
+
+    <!-- Flash Alerts Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="space-y-2">
+                {% for category, message in messages %}
+                    <div class="flex items-center justify-between p-4 rounded-xl text-sm font-medium border shadow-sm transition-all duration-300
+                        {% if category == 'success' %} bg-emerald-50 text-emerald-800 border-emerald-200
+                        {% elif category == 'danger' %} bg-rose-50 text-rose-800 border-rose-200
+                        {% elif category == 'warning' %} bg-amber-50 text-amber-800 border-amber-200
+                        {% else %} bg-sky-50 text-sky-800 border-sky-200 {% endif %}">
+                        <div class="flex items-center space-x-3">
+                            {% if category == 'success' %}<i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>
+                            {% elif category == 'danger' %}<i class="fa-solid fa-triangle-exclamation text-rose-600 text-lg"></i>
+                            {% elif category == 'warning' %}<i class="fa-solid fa-bell text-amber-600 text-lg"></i>
+                            {% else %}<i class="fa-solid fa-circle-info text-sky-600 text-lg"></i>{% endif %}
+                            <span>{{ message }}</span>
+                        </div>
+                        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600 p-1">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Page Content Block -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Modern Agriculture Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-auto py-8 text-slate-500 text-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <div class="flex items-center space-x-2">
+                <div class="w-6 h-6 rounded-md bg-brand-600 text-white flex items-center justify-center text-xs">
+                    <i class="fa-solid fa-leaf"></i>
+                </div>
+                <span class="font-bold text-slate-800 text-sm">AgriVision AI</span>
+                <span class="text-slate-400">|</span>
+                <span>PlantVillage MobileNetV2 Deep Learning Framework</span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <span>38 Plant Classes</span>
+                <span>Exact Agronomic Diagnosis</span>
+                <span>Precision Fertilizer Recommendations</span>
+            </div>
+            <div>
+                <span>&copy; 2026 Crop Disease Computer Vision System</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Diagnosis History | AgriVision AI{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-6xl mx-auto">
+
+    <!-- Header -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="inline-flex items-center space-x-2 px-3 py-1 bg-brand-50 border border-brand-200 rounded-full text-brand-700 text-xs font-semibold mb-2">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>Farmer Diagnostic Logbook</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Diagnosis History & Logs</h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                Historical record of leaf scans, detected pathogens, and assigned fertilizer treatments.
+            </p>
+        </div>
+
+        <a href="{{ url_for('dashboard') }}" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center space-x-2">
+            <i class="fa-solid fa-camera"></i>
+            <span>New Leaf Scan</span>
+        </a>
+    </div>
+
+    <!-- Diagnoses Table or Card Grid -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
+        {% if diagnoses %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        <th class="py-3.5 px-4">Specimen</th>
+                        <th class="py-3.5 px-4">Crop & Condition</th>
+                        <th class="py-3.5 px-4">Status & Severity</th>
+                        <th class="py-3.5 px-4">AI Confidence</th>
+                        <th class="py-3.5 px-4">Dataset Match</th>
+                        <th class="py-3.5 px-4">Date</th>
+                        <th class="py-3.5 px-4 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-xs text-slate-700">
+                    {% for diag in diagnoses %}
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <!-- Thumbnail -->
+                        <td class="py-3.5 px-4">
+                            <img src="{{ url_for('static', filename='uploads/' + diag.image_filename) }}" 
+                                 alt="Leaf" class="w-14 h-14 object-cover rounded-xl border border-slate-200">
+                        </td>
+                        <!-- Crop & Condition -->
+                        <td class="py-3.5 px-4">
+                            <strong class="text-slate-900 font-bold block">{{ diag.crop_name }}</strong>
+                            <span class="text-slate-500">{{ diag.condition_name }}</span>
+                        </td>
+                        <!-- Status & Severity -->
+                        <td class="py-3.5 px-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold
+                                {% if 'healthy' in diag.condition_name | lower %} bg-emerald-100 text-emerald-800
+                                {% elif diag.severity == 'Severe' %} bg-rose-100 text-rose-800
+                                {% else %} bg-amber-100 text-amber-800 {% endif %}">
+                                {{ diag.severity }}
+                            </span>
+                        </td>
+                        <!-- AI Confidence -->
+                        <td class="py-3.5 px-4 font-mono font-bold text-slate-900">
+                            {{ diag.confidence }}%
+                        </td>
+                        <!-- Dataset Match -->
+                        <td class="py-3.5 px-4 font-mono text-brand-700 font-bold">
+                            {{ diag.similarity_score }}%
+                        </td>
+                        <!-- Date -->
+                        <td class="py-3.5 px-4 text-slate-400 font-mono text-[11px]">
+                            {{ diag.created_at[:16] }}
+                        </td>
+                        <!-- Action -->
+                        <td class="py-3.5 px-4 text-right">
+                            <a href="{{ url_for('view_diagnosis', diag_id=diag.id) }}"
+                               class="inline-flex items-center px-3 py-1.5 bg-slate-100 hover:bg-brand-50 hover:text-brand-700 font-bold text-xs rounded-lg transition border border-slate-200">
+                                <span>Report</span>
+                                <i class="fa-solid fa-chevron-right ml-1.5 text-[10px]"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-regular fa-folder-open"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-700">No diagnoses recorded yet</h3>
+            <p class="text-xs text-slate-400 mt-1 mb-6">Upload a crop leaf from your dashboard to record your first diagnosis.</p>
+            <a href="{{ url_for('dashboard') }}" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-md transition">
+                Start First Scan Now
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
